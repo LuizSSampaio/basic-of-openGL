@@ -1,6 +1,58 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <sstream>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
+
+struct ShaderProgramSources
+{
+	std::string vertexSource;
+	std::string fragmentSource;
+};
+
+static ShaderProgramSources parseShader(const std::string& shaderPath)
+{
+	std::ifstream stream(shaderPath);
+
+	enum class ShaderType
+	{
+		NONE = -1, VERTEX = 0, FRAGMENT = 1
+	};
+
+	std::string line;
+	std::stringstream stringStream[2];
+	ShaderType type = ShaderType::NONE;
+	while (getline(stream, line))
+	{
+		if (line.find("#shader") != std::string::npos)
+		{
+			if (line.find("vertex") != std::string::npos)
+			{
+				type = ShaderType::VERTEX;
+			}
+			else if (line.find("fragment") != std::string::npos)
+			{
+				type = ShaderType::FRAGMENT;
+			}
+			else
+			{
+				type = ShaderType::NONE;
+				std::cout << "WARNING:	" << "Unknow shader | " << shaderPath << "\n";
+			}
+		}
+		else
+		{
+			if (type != ShaderType::NONE)
+			{
+				stringStream[(int)type] << line << "\n";
+			}
+		}
+	}
+
+	return { stringStream[0].str(), stringStream[1].str() };
+}
 
 static GLuint CompileShader(const std::string& source, GLuint type)
 {
@@ -91,25 +143,8 @@ int main()
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2, 0);
 
-	std::string vertexShader = 
-		"#version 330 core\n"
-		"\n"
-		"layout(location = 0) in vec4 position;\n"
-		"\n"
-		"void main()\n"
-		"{\n"
-		"	gl_position = position;\n"
-		"}";
-	std::string fragmentShader = 
-		"#version 330 core\n"
-		"\n"
-		"layout(location = 0) out vec4 color;\n"
-		"\n"
-		"void main()\n"
-		"{\n"
-		"	color = vec4(1.0, 0.5, 0.25, 1.0);\n"
-		"}";
-	GLuint program = CreateShader(vertexShader, fragmentShader);
+	ShaderProgramSources parsedShader = parseShader("res/shaders/Basic.glsl");
+	GLuint program = CreateShader(parsedShader.vertexSource, parsedShader.fragmentSource);
 	glUseProgram(program);
 
 	// Loop until the user close the window
