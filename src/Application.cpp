@@ -179,6 +179,10 @@ int main()
 	GLuint program = createShader(parsedShader.vertexSource, parsedShader.fragmentSource);
 	GLCall(glUseProgram(program));
 
+	GLint colorUniformLocation = glGetUniformLocation(program, "u_Color");
+	ASSERT(colorUniformLocation != -1)
+	glUniform4f(colorUniformLocation, 1.0f, 0.75f, 0.5f, 1.0f);
+
 	// Loop until the user close the window
 	while (!glfwWindowShouldClose(window))
 	{
