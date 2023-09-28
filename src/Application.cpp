@@ -161,10 +161,14 @@ int main()
 		2, 3, 0
 	};
 
+	GLuint vao;
+	GLCall(glGenVertexArrays(1, &vao));
+	GLCall(glBindVertexArray(vao));
+
 	GLuint vertexBuffer;
 	GLCall(glGenBuffers(1, &vertexBuffer));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer));
-	GLCall(glBufferData(GL_ARRAY_BUFFER, 6 * 2 * sizeof(GLfloat), positions, GL_STATIC_DRAW));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, 4 * 2 * sizeof(GLfloat), positions, GL_STATIC_DRAW));
 
 	GLCall(glEnableVertexAttribArray(0));
 	GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 2, 0));
@@ -183,11 +187,22 @@ int main()
 	ASSERT(colorUniformLocation != -1)
 	glUniform4f(colorUniformLocation, 1.0f, 0.75f, 0.5f, 1.0f);
 
+	GLCall(glBindVertexArray(0));
+	GLCall(glUseProgram(0));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+
 	// Loop until the user close the window
 	while (!glfwWindowShouldClose(window))
 	{
 		// Render here
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		GLCall(glUseProgram(program));
+
+		glBindVertexArray(vao);
+
+		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
 
 		// Draw a triangle at the screen
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
